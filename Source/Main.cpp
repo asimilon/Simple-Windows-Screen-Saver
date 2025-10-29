@@ -36,27 +36,30 @@ public:
 
     void shutdown() override
     {
-        saver = nullptr;
-        config = nullptr;
+        savers.clear();
+        config.reset();;
     }
 
     void systemRequestedQuit() override { quit(); }
 
 private:
-    std::unique_ptr<SaverComponent> saver;
+    std::vector<std::unique_ptr<SaverComponent>> savers;
     std::unique_ptr<ConfigWindow> config;
 
     void runFullScreen()
     {
-        auto mainScreen = juce::Desktop::getInstance().getDisplays().getMainDisplay();
-        juce::Rectangle<int> screenBounds = mainScreen.totalArea;
-
-        saver = std::make_unique<SaverComponent>(false, [this] { quit(); });
-        saver->setOpaque(true);
-        saver->setBounds(screenBounds);
-        saver->addToDesktop(0);
-        saver->setVisible(true);
-        saver->toFront(true);
+        auto screens = juce::Desktop::getInstance().getDisplays();
+        for (const auto& display : screens.displays)
+        {
+            auto saver = std::make_unique<SaverComponent>(false, [this] { quit(); });
+            auto screenBounds = display.totalArea;
+            saver->setOpaque(true);
+            saver->setBounds(screenBounds);
+            saver->addToDesktop(0);
+            saver->setVisible(true);
+            saver->toFront(true);
+            savers.push_back(std::move(saver));
+        }
     }
 
     void showConfigDialog() { config.reset(new ConfigWindow(getApplicationName())); }

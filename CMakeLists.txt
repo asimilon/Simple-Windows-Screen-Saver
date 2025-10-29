@@ -20,6 +20,7 @@ target_sources(ScreenSaver PRIVATE
     Source/Main.cpp
     Source/SaverComponent.h
     Source/ConfigComponent.h
+    Source/Config.h
 )
 
 target_compile_definitions(ScreenSaver PRIVATE
