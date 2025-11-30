@@ -109,16 +109,18 @@ private:
     {
         zoom += zoomSpeed;
 
-        if ((zoom > 1.6f || zoom < 1.1f) && !flippingZoomDirection)
+        if ((zoom > 1.6f || zoom < 1.2f) && !flippingZoomDirection)
         {
             requiredZoomSpeed = zoomSpeed;
             flippingZoomDirection = true;
         }
         if (flippingZoomDirection)
         {
-            const auto speedDelta = requiredZoomSpeed - zoomSpeed;
-            zoomSpeed += speedDelta * 0.01f;
-            if (juce::approximatelyEqual(zoomSpeed, requiredZoomSpeed))
+            const auto speedDelta = requiredZoomSpeed > 0
+                                  ? smoothing
+                                  : -smoothing;
+            zoomSpeed += speedDelta;
+            if (std::abs(zoomSpeed) >= std::abs(requiredZoomSpeed))
             {
                 zoomSpeed = requiredZoomSpeed;
                 flippingZoomDirection = false;
@@ -128,12 +130,12 @@ private:
         panX += panSpeedX;
         panY += panSpeedY;
 
-        if ((panX < 0.0f || panX > 1.0f) && !flippingDirectionX)
+        if ((panX < 0.1f || panX > 0.9f) && !flippingDirectionX)
         {
             requiredPanSpeedX = -panSpeedX;
             flippingDirectionX = true;
         }
-        if ((panY < 0.0f || panY > 1.0f) && !flippingDirectionY)
+        if ((panY < 0.1f || panY > 0.9f) && !flippingDirectionY)
         {
             requiredPanSpeedY = -panSpeedY;
             flippingDirectionY = true;
@@ -141,9 +143,11 @@ private:
 
         if (flippingDirectionX)
         {
-            const auto speedDelta = requiredPanSpeedX - panSpeedX;
-            panSpeedX += speedDelta * 0.01f;
-            if (juce::approximatelyEqual(panSpeedX, requiredPanSpeedX))
+            const auto speedDelta = requiredPanSpeedX > 0
+                                  ? smoothing
+                                  : -smoothing;
+            panSpeedX += speedDelta;
+            if (std::abs(panSpeedX) >= std::abs(requiredPanSpeedX))
             {
                 panSpeedX = requiredPanSpeedX;
                 flippingDirectionX = false;
@@ -151,9 +155,11 @@ private:
         }
         if (flippingDirectionY)
         {
-            const auto speedDelta = requiredPanSpeedY - panSpeedY;
-            panSpeedY += speedDelta * 0.01f;
-            if (juce::approximatelyEqual(panSpeedY, requiredPanSpeedY))
+            const auto speedDelta = requiredPanSpeedY > 0
+                                  ? smoothing
+                                  : -smoothing;
+            panSpeedY += speedDelta;
+            if (std::abs(panSpeedY) >= std::abs(requiredPanSpeedY))
             {
                 panSpeedY = requiredPanSpeedY;
                 flippingDirectionY = false;
@@ -199,6 +205,7 @@ private:
     float panSpeedX {}, panSpeedY {};
     float requiredPanSpeedX {}, requiredPanSpeedY {};
     bool flippingDirectionX = false, flippingDirectionY = false;
+    static constexpr auto smoothing = 0.0000025f;
 
     juce::Image image;
     juce::Random random;
