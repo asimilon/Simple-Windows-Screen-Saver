@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(ScreenSaver VERSION 1.0.2)
+project(ScreenSaver VERSION 1.0.3)
 
 include(CMake/CPM.cmake)
 
@@ -22,6 +22,7 @@ target_sources(ScreenSaver PRIVATE
     Source/ImageComponent.h
     Source/ConfigComponent.h
     Source/Config.h
+    Source/SharedState.h
 )
 
 target_compile_definitions(ScreenSaver PRIVATE

@@ -1,11 +1,9 @@
-#include <windows.h> // <-- Add this first!
-#define WIN32_LEAN_AND_MEAN
-
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <memory>
 
 #include "ConfigComponent.h"
 #include "SaverComponent.h"
+#include "SharedState.h"
 
 class ScreensaverApplication : public juce::JUCEApplication
 {
@@ -49,8 +47,12 @@ private:
     std::vector<std::unique_ptr<SaverComponent>> savers;
     std::unique_ptr<ConfigWindow> config;
 
+    juce::SharedResourcePointer<SharedState> sharedState;
+
     void runFullScreen()
     {
+        if (sharedState->isRunning() && sharedState->isPreviewing.load())
+            return;
         auto screens = juce::Desktop::getInstance().getDisplays();
         for (const auto& display : screens.displays)
         {

@@ -5,6 +5,7 @@
 
 #include "Config.h"
 #include "ImageComponent.h"
+#include "SharedState.h"
 
 class SaverComponent
     : public juce::Component
@@ -15,6 +16,8 @@ public:
         : onExit(std::move(onExitFn))
         , preview(isPreview)
     {
+        if (!preview)
+            sharedState->start();
         reset();
 
         setWantsKeyboardFocus(true);
@@ -25,6 +28,12 @@ public:
         startTimerHz(60);
     }
 
+    ~SaverComponent() override
+    {
+        if (!preview)
+            sharedState->stop();
+    }
+
     void reset()
     {
         imagePaths.clear();
@@ -33,7 +42,7 @@ public:
         auto imagesPath = juce::File(settingsFile.loadFileAsString());
         if (imagesPath.exists())
         {
-            imagePaths = imagesPath.findChildFiles(juce::File::TypesOfFileToFind::findFiles, true, "*.jpg");
+            imagePaths = imagesPath.findChildFiles(juce::File::TypesOfFileToFind::findFiles, true, "*.jpg,*.png");
         }
     }
 
@@ -46,6 +55,7 @@ private:
     juce::Array<juce::File> imagePaths;
     std::vector<int> imageIndices;
     std::vector<std::unique_ptr<ImageComponent>> imageComponents;
+    juce::SharedResourcePointer<SharedState> sharedState;
 
     juce::Random random;
 
